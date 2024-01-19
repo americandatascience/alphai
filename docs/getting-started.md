@@ -39,6 +39,14 @@ aai = AlphAI(
 # Starting default server
 # May take a moment to get ready
 aai.start_server()
+
+# Upload to your server's file system 
+aai.upload("./main.py")
+
+# Start python kernel and run code remotely
+code = "print('Hello world!')"
+aai.run_code(code)
+
 ```
 
 

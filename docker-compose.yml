@@ -1,0 +1,19 @@
+services:
+  jupyter:
+    build:
+      context: .
+      dockerfile: ./docker/runtime/Dockerfile.cuda12.2.2-runtime-ubuntu22.04-py3.10
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "8888:8888"
+      - "5000:5000"
+    command: ["sh","-c", "jupyter lab --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}"]
+    volumes:
+      - ./:/opt/pysetup
+  

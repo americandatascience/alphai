@@ -20,7 +20,7 @@ Install AlphAI easily using pip:
 pip install alphai
 
 # If you'd like to install torch in a Linux machine with CUDA-drivers
-# `pip install alphai[torch]`
+pip install alphai[torch]
 ```
 
 ### Authentication Pre-requisites

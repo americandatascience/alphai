@@ -89,6 +89,7 @@ load_dotenv()
 
 ```python
 import os
+
 from alphai import AlphAI
 
 aai = AlphAI(
@@ -97,21 +98,33 @@ aai = AlphAI(
 )
 ```
 
+Now just wrap any PyTorch GPU operation you'd like to profile.
 
 ```python
-aai.start()
+import math
+import torch
+
 model = torch.nn.Sequential(
     torch.nn.Linear(3, 1),
     torch.nn.Flatten(0, 1)
-)
+).to("cuda")
 x = torch.linspace(-math.pi, math.pi, 2000)
 p = torch.tensor([1, 2, 3])
-xx = x.unsqueeze(-1).pow(p)
-aai.stop()
+xx = x.unsqueeze(-1).pow(p).to("cuda")
 
+aai.start()
+model(xx)
+aai.stop()
+```
+
+Run profiler analytics and save your trace and analytics locally.
+
+```
 aai.run_profiler_analysis()
 aai.save()
 ```
+
+Then run load view to use the online [viewer](https://amdatascience.com/viewer) for your analytics and statistics.
 
 
 ```python

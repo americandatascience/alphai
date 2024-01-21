@@ -18,8 +18,8 @@ from alphai.client.client import Client
 
 class AlphAI:
     """
-    The AlphAI class provides a high-level interface for benchmarking, memory estimation, 
-    and interaction with remote Jupyter Lab servers. It supports various tensor-based models 
+    The AlphAI class provides a high-level interface for benchmarking, memory estimation,
+    and interaction with remote Jupyter Lab servers. It supports various tensor-based models
     and integrates with American Data Science Labs for managing GPU resources.
 
     Attributes:
@@ -91,6 +91,9 @@ class AlphAI:
         self.pt_trace_dirs = self.get_pt_traces()
 
         # Profilers
+        self.dict_idle_time = None
+        self.dict_averages = None
+
         if is_package_installed("torch") and not pt_profiler_configs:
             from alphai.profilers.pytorch import PyTorchProfilerConfigs, PyTorchProfiler
 
@@ -425,12 +428,15 @@ class AlphAI:
             dict (optional): A dictionary containing the saved data if return_results is True.
         """
         alphai_dict = {}
-        if not self.dict_idle_time:
+        if self.dict_idle_time is None:
+            warnings.warn("Make sure to run_profiler_analysis() before saving to your analytics.")
             self.run_profiler_analysis()
         self.get_averages()
         alphai_dict["metadata"] = self.analyzer.t.meta_data
         alphai_dict["idle_time"] = self.dict_idle_time
         alphai_dict["time_spent"] = self.dict_time_spent
+        alphai_dict["type_metrics"] = self.dict_type_metrics
+        alphai_dict["kernel_metrics"] = self.dict_kernel_metrics
         alphai_dict["key_averages"] = self.dict_averages
         with open(
             os.path.join(self.pt_profiler.profiler_path, "profiling.alphai.json"), "w"

@@ -151,9 +151,10 @@ markdown_extensions:
 nav:
   - Home: 'index.md'
   - Getting Started:
-    - Installation and Authentication: 'getting-started.md'
-    - Benchmarking: 'benchmarking.md'
+    - Installation: 'installation.md'
+    - Authentication: 'authentication.md'
     - Servers: 'lab-servers.md'
+    - Benchmarking: 'benchmarking.md'
     - GPU Profiling : 'gpu-profiling.md'
   - Models: 
     - Hugging Face: 'models/hugging-face.md'

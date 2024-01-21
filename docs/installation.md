@@ -16,44 +16,33 @@ Benchmarking, American Data Science client, and other model utilities will work 
 
 If your CUDA drivers are up to date, you can install alphai with GPU-enabled torch by running `pip install alphai[torch]`.
 
+## quickstart
 
-### Authentication Pre-requisites
-
-Although not strictly required to use the computational functions of the alphai package, it is recommended to create an account at [American Data Science](https://dashboard.amdatascience.com) and generate an API key to make use of your two free remote Jupyter Lab servers.
-
-You don't need an API key to use the GPU profiling, benchmarking, and generate modules.
-
-## American Data Science Labs
-
-If you're authenticated with your AmDS account and api key, you can start and stop your servers.
-
+You can check if AlphAI was successfully installed by trying out the benchmarking tools:
 
 ```python
-import os
 from alphai import AlphAI
 
-aai = AlphAI(
-    api_key=os.environ.get("ALPHAI_API_KEY"),
-)
+aai = AlphAI()
 
-# Starting default server
-# May take a moment to get ready
-aai.start_server()
+def some_function(x, y):
+    return x+y
 
-# Upload to your server's file system 
-aai.upload("./main.py")
+aai.start_timer()
+some_function(1, 2)
+aai.stop_timer()
 
-# Start python kernel and run code remotely
-code = "print('Hello world!')"
-aai.run_code(code)
-
+aai.benchmark(some_function, 1, 2, num_iter = 100)
 ```
 
-
-To stop the servers run below:
-
+If you have torch installed, you can even use the `generate()` feature.
 
 ```python
-aai.stop_server()
-```
+prompt = "Hello there!"
 
+aai.start_timer()
+aai.generate(prompt)
+aai.stop_timer()
+
+aai.benchmark(aai.generate, prompt, num_iter = 5)
+```

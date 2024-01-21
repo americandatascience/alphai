@@ -4,7 +4,7 @@ AlphAI integrates directly with American Data Science's remote Jupyter Lab serve
 
 You can start servers, stop servers, upload files to your remote file system, load GPU profiling data, and even run code programmatically!
 
-Using these tools require authentication.
+Using these tools require [authentication](/americandatascience/alphai/authentication).
 
 ## American Data Science Client
 
@@ -35,9 +35,16 @@ aai = AlphAI(
 
 ## Start your remote Jupyter Lab servers
 
+Starting up your servers with AlphAI will use the configurations and environment runtime that were used the last time you started the server from your [Dashboard](https://dashboard.amdatascience.com).
+
+If it's a new server or you've never started it, it will use the default AI environment runtime.
+
 
 ```python
 aai.start_server()
+
+# Specify the server name if you'd like
+#aa.start_server(server_name="Experiment 3")
 ```
 
 

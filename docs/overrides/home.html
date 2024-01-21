@@ -234,17 +234,16 @@
 
 <script>
   const code = `from alphai import AlphAI
-import torch
 
 prompt = "Hello there!"
 
-# Start and stop profiling
+# Start and stop GPU profiler
 aai.start()
 aai.generate(prompt)
 aai.stop()
 
 # Or use context manger
-with aai.profile():
+with aai:
     aai.generate(prompt)
 `;
 
@@ -282,17 +281,20 @@ aai.run_code(code)
 
   let profilingCode = `from alphai import AlphAI
 import torch
+import math
 
 aai = AlphAI()
 
-aai.start()
 model = torch.nn.Sequential(
     torch.nn.Linear(3, 1),
     torch.nn.Flatten(0, 1)
-)
+).to("cuda")
 x = torch.linspace(-math.pi, math.pi, 2000)
 p = torch.tensor([1, 2, 3])
-xx = x.unsqueeze(-1).pow(p)
+xx = x.unsqueeze(-1).pow(p).to("cuda")
+
+aai.start()
+model(xx)
 aai.stop()
 `;
 
@@ -304,7 +306,7 @@ aai.start_timer()
 aai.generate(prompt)
 aai.stop_timer()
 
-aai.benchmark(alphai.generate, prompt, num_iter = 5)
+aai.benchmark(aai.generate, prompt, num_iter = 5)
 
 `;
 

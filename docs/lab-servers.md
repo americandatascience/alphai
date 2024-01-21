@@ -4,7 +4,7 @@ AlphAI integrates directly with American Data Science's remote Jupyter Lab serve
 
 You can start servers, stop servers, upload files to your remote file system, load GPU profiling data, and even run code programmatically!
 
-Using these tools require [authentication](/americandatascience/alphai/authentication).
+Using these tools require [authentication](authentication.md).
 
 ## American Data Science Client
 

@@ -42,7 +42,7 @@ class AlphAI:
         api_key: Union[str, None] = None,
         organization: Union[str, None] = None,
         base_url: str = None,
-        output_path: str = "./.alphai",
+        output_path: str = "./alphai_profiler_store",
         server_name: str = "",
         pt_profiler_configs: BaseProfilerConfigs = None,
         jax_profiler_configs: BaseProfilerConfigs = None,
@@ -55,7 +55,7 @@ class AlphAI:
             api_key (Union[str, None]): API key for authentication. If None, will try to read from environment.
             organization (Union[str, None]): The name of the organization. If None, will try to read from environment.
             base_url (str): The base URL for remote services. If None, defaults to a predefined URL.
-            output_path (str): The path where output files are stored. Defaults to './.alphai'.
+            output_path (str): The path where output files are stored. Defaults to './alphai_profiler_store'.
             server_name (str): The name of the server for remote operations.
             pt_profiler_configs (BaseProfilerConfigs): Configuration for the PyTorch profiler.
             jax_profiler_configs (BaseProfilerConfigs): Configuration for the JAX profiler.
@@ -421,7 +421,7 @@ class AlphAI:
         Saves the profiler data and analysis results to a specified directory.
 
         Args:
-            output_dir (str, optional): The directory to save the data. If None, uses the default profiler path. Defaults to None.
+            output_dir (str, optional): The directory to save a copy of the analysis data. Trace and analysis file are still saved in `profiler_path`.
             return_results (bool): Whether to return the saved data as a dictionary. Defaults to False.
 
         Returns:
@@ -429,7 +429,9 @@ class AlphAI:
         """
         alphai_dict = {}
         if self.dict_idle_time is None:
-            warnings.warn("Make sure to run_profiler_analysis() before saving to your analytics.")
+            warnings.warn(
+                "Make sure to run_profiler_analysis() before saving to your analytics."
+            )
             self.run_profiler_analysis()
         self.get_averages()
         alphai_dict["metadata"] = self.analyzer.t.meta_data
@@ -442,12 +444,16 @@ class AlphAI:
             os.path.join(self.pt_profiler.profiler_path, "profiling.alphai.json"), "w"
         ) as f:
             json.dump(alphai_dict, f, indent=4)
+        # Create copy of analysis in output_dir
+        os.makedirs(output_dir, exist_ok=True)
+        with open(os.path.join(output_dir, "profiling.alphai.json"), "w") as f:
+            json.dump(alphai_dict, f, indent=4)
         if return_results:
             return alphai_dict
 
     def load_view(self, dir_name: str = None):
         """
-        Loads a view of the profiler data on a remote server.
+        Loads a view of the profiler data onto your remote server.
 
         Args:
             dir_name (str, optional): The directory name to load the view from. If None, generates a timestamp-based directory name. Defaults to None.
@@ -468,7 +474,7 @@ class AlphAI:
             path=view_path,
             file_path=f"{self.pt_profiler.profiler_path}/profiling.alphai.json",
         )
-        return f"Check out your GPU usage statistics at -> https://dashboard.amdatascience.com/viewer"
+        return f"Check out your GPU usage statistics at -> https://dashboard.amdatascience.com/agent-alph"
 
     def get_pt_traces(self):
         """

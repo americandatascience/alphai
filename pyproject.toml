@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "alphai"
-version = "0.0.5"
+version = "0.0.6"
 description = ""
 authors = ["Andrew Chang"]
 readme = "README.md"

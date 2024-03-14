@@ -416,12 +416,11 @@ class AlphAI:
                 self.dict_kernel_metrics = {}
                 return
 
-    def save(self, output_dir: str = None, return_results: bool = False):
+    def save(self, return_results: bool = False):
         """
         Saves the profiler data and analysis results to a specified directory.
 
         Args:
-            output_dir (str, optional): The directory to save a copy of the analysis data. Trace and analysis file are still saved in `profiler_path`.
             return_results (bool): Whether to return the saved data as a dictionary. Defaults to False.
 
         Returns:
@@ -441,12 +440,8 @@ class AlphAI:
         alphai_dict["kernel_metrics"] = self.dict_kernel_metrics
         alphai_dict["key_averages"] = self.dict_averages
         with open(
-            os.path.join(self.pt_profiler.profiler_path, "profiling.alphai.json"), "w"
+            os.path.join(self.pt_profiler.profiler_path, "profiling.alphai"), "w"
         ) as f:
-            json.dump(alphai_dict, f, indent=4)
-        # Create copy of analysis in output_dir
-        os.makedirs(output_dir, exist_ok=True)
-        with open(os.path.join(output_dir, "profiling.alphai.json"), "w") as f:
             json.dump(alphai_dict, f, indent=4)
         if return_results:
             return alphai_dict
@@ -472,7 +467,7 @@ class AlphAI:
         self.client.patch_contents(path="Untitled Folder.alphai", new_path=view_path)
         self.client.put_contents(
             path=view_path,
-            file_path=f"{self.pt_profiler.profiler_path}/profiling.alphai.json",
+            file_path=f"{self.pt_profiler.profiler_path}/profiling.alphai",
         )
         return f"Check out your GPU usage statistics at -> https://dashboard.amdatascience.com/agent-alph"
 

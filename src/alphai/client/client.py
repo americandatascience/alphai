@@ -19,9 +19,11 @@ class Client:
     def __init__(
         self,
         host: str = "https://lab.amdatascience.com",
+        dashboard_url: str = "https://dashboard.amdatascience.com",
         access_token=None,
     ):
         self.host = host
+        self.dashboard_url = dashboard_url
         self.access_token = access_token
         self.configuration = jh_client.Configuration(host=f"{host}/hub/api")
         self.configuration.access_token = access_token
@@ -73,53 +75,122 @@ class Client:
             for k, v in servers.items()
         }
 
-    # JH Client
-    def start_server(self, server_name: str = "", options: dict = None):
-        # Start Server given name
-        # str | name given to a named-server.  Note that depending on your JupyterHub infrastructure there are chracterter size limitation to `server_name`. Default spawner with K8s pod will not allow Jupyter Notebooks to be spawned with a name that contains more than 253 characters (keep in mind that the pod will be spawned with extra characters to identify the user and hub).
-        # object | Spawn options can be passed as a JSON body when spawning via the API instead of spawn form. The structure of the options will depend on the Spawner's configuration.  (optional)
-        server_url = (
-            f"{self.host}/user/{self.user_name}/{urllib.parse.quote(server_name)}"
-        )
-        server_pending_url = f"{self.host}/hub/spawn-pending/{self.user_name}/{urllib.parse.quote(server_name)}"
-        server_pending_url = (
-            server_pending_url[:-1]
-            if server_pending_url[-1] == "/"
-            else server_pending_url
-        )
-        try:
-            # Start a user's single-user named-server notebook server
-            resp_start_server = self.api_instance.users_name_servers_server_name_post(
-                self.user_name, server_name, options=options
-            )
-            print(f"Jupyter Lab Server Starting! Link-> {server_pending_url}")
-        except Exception as e:
-            print(
-                "Exception when calling DefaultApi->users_name_servers_server_name_post: %s\n"
-                % e
-            )
-            return
+    # Dashboard Client
+    def start_server(
+            self,
+            server_name: str = "",
+            environment: str = "ai",
+            server_request: str = "medium-cpu",
+        ):
 
-        return resp_start_server
+        # Start Server given name
+        # Data to be sent in POST request
+        data = {
+            "server_name": server_name,
+            "environment": environment,
+            "server_request": server_request,
+            "port": 5000,
+        }
+
+        url = f"{self.dashboard_url}/api/server"
+        headers = {
+            "apikey": f"{self.access_token}",
+            'Accept': 'application/json'
+        }
+
+        response = requests.post(
+            url,
+            json=data,
+            headers=headers,
+        )
+
+        # If the response is JSON
+        try:
+            response_data = response.json()
+            return response_data
+        except ValueError:
+            print("Response is not in JSON format")
+
 
     def stop_server(self, server_name: str = ""):
-        # Start Server given name
-        # str | name given to a named-server.  Note that depending on your JupyterHub infrastructure there are chracterter size limitation to `server_name`. Default spawner with K8s pod will not allow Jupyter Notebooks to be spawned with a name that contains more than 253 characters (keep in mind that the pod will be spawned with extra characters to identify the user and hub).
-        # object | Spawn options can be passed as a JSON body when spawning via the API instead of spawn form. The structure of the options will depend on the Spawner's configuration.  (optional)
+        # Stop Server given name
+        # Data to be sent in POST request
+        if not server_name:
+            server_name = "default"
+        data = {
+            "stop": True,
+        }
 
+        url = f"{self.dashboard_url}/api/server/{server_name}"
+        headers = {
+            "apikey": f"{self.access_token}",
+            'Accept': 'application/json'
+            }
+
+        response = requests.post(
+            url,
+            json=data,
+            headers=headers,
+        )
+
+        # If the response is JSON
         try:
-            # Start a user's single-user named-server notebook server
-            resp_start_server = self.api_instance.users_name_servers_server_name_delete(
-                self.user_name, server_name
-            )
-        except Exception as e:
-            print(
-                "Exception when calling DefaultApi->users_name_servers_server_name_delete: %s\n"
-                % e
-            )
-            return
+            response_data = response.json()
+            return response_data
+        except ValueError:
+            print("Response is not in JSON format")
 
-        return resp_start_server
+    def alph(
+            self,
+            server_name: str = "",
+            messages: str | list = "Hi Alph.",
+            engine: str = "gpt3",
+        ):
+
+        # Agent Alph call
+        # Data to be sent in POST request
+        if isinstance(messages, str):
+            data = {
+                "messages": [
+                    {"role": "user", "content": messages}
+                ],
+            }
+        else:
+            data = {
+                "messages": messages
+            }
+
+        url = f"{self.dashboard_url}/api/alph/{server_name}/{engine}"
+        headers = {
+            "apikey": f"{self.access_token}",
+            'Accept': 'application/json'
+        }
+
+        response = requests.post(
+            url,
+            json=data,
+            headers=headers,
+            stream=True
+        )
+
+        # If the response is JSON
+        #try:
+        if response.encoding is None:
+            response.encoding = 'utf-8'
+
+        full_output = []
+        try:
+            for line in response.iter_lines(decode_unicode=True):
+                if line:
+                    #import pdb; pdb.set_trace()
+                    split_line = line.split(':')
+                    cleaned_line = split_line[1].replace('"', '')
+                    print(cleaned_line, end="")
+                    full_output.append(cleaned_line)
+        except ValueError:
+            print("Response encoded incorrectly.")
+        
+        return "".join(full_output)
 
     # NB server client
     def get_contents(self, server_name: str = ""):

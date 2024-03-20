@@ -212,7 +212,12 @@ class AlphAI:
             raise ValueError("Requires user authentication with an API Key")
         return self.client.get_servers()
 
-    def start_server(self, server_name: str = None):
+    def start_server(
+            self,
+            server_name: str = None,
+            environment: str = "ai",
+            server_request: str = "medium-cpu",
+        ):
         """
         Starts a server with the given name.
 
@@ -227,7 +232,7 @@ class AlphAI:
         # Use set self.server_name if not provided
         if server_name is None:
             server_name = self.server_name
-        return self.client.start_server(server_name=server_name)
+        return self.client.start_server(server_name=server_name, environment=environment, server_request=server_request)
 
     def stop_server(self, server_name: str = None):
         """
@@ -245,6 +250,28 @@ class AlphAI:
         if server_name is None:
             server_name = self.server_name
         return self.client.stop_server(server_name=server_name)
+
+    def alph(
+            self,
+            server_name: str = None,
+            messages: str = "ls",
+            engine: str = "gpt3",
+        ):
+        """
+        Gives alph commands to help you and run on the server.
+
+        Args:
+            server_name (str): The name of the server to stop. If None, uses the server name set in the instance.
+
+        Returns:
+            Response from the server stop request.
+        """
+        if not self.api_key:
+            raise ValueError("Requires user authentication with an API Key")
+        # Use set self.server_name if not provided
+        if server_name is None:
+            server_name = self.server_name
+        return self.client.alph(server_name=server_name, messages=messages, engine=engine)
 
     def upload(self, server_name: str = None, file_path: str = "", remote_path=""):
         """

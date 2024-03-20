@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04 as base
+FROM nvcr.io/nvidia/cuda:12.3.2-runtime-ubuntu22.04 as base
 
 LABEL maintainer="Andrew Chang <andrew@amdatascience.com>"
 
@@ -34,22 +34,22 @@ ENV PATH="$POETRY_HOME/bin:$VIRTUAL_ENV/bin:$PATH"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    python3.10 \
-    python3.10-dev \
-    python3.10-venv \
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
     python3-pip \
     curl \
     vim
 
 # create virtualenv
-RUN python3 -m venv $VIRTUAL_ENV
+RUN python3.11 -m venv $VIRTUAL_ENV
 
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN rm -fr /root/.cache/pip
 
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN curl -sSL https://install.python-poetry.org | python3.11 -
 RUN poetry config installer.max-workers 10
 
 # copy project requirement files here to ensure they will be cached.

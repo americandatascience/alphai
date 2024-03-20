@@ -2,7 +2,7 @@ services:
   jupyter:
     build:
       context: .
-      dockerfile: ./docker/runtime/Dockerfile.cuda12.2.2-runtime-ubuntu22.04-py3.10
+      dockerfile: ./docker/runtime/Dockerfile.cuda12.3.2-runtime-ubuntu22.04-py3.11
     deploy:
       resources:
         reservations:

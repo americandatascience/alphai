@@ -41,15 +41,19 @@ If it's a new server or you've never started it, it will use the default AI envi
 
 
 ```python
-aai.start_server()
-
-# Specify the server name if you'd like
-#aa.start_server(server_name="Experiment 3")
+aai.start_server(server_name="sandbox", environment="ai")
 ```
 
 
 ```python
-aai.stop_server()
+aai.stop_server(server_name="sandbox")
+```
+
+## Command Agent Alph
+
+
+```python
+response = aai.alph(server_name="default", messages="I need a python file that analyzes a generic csv file.", engine="gpt3")
 ```
 
 ## Run code remotely

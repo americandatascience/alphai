@@ -1,0 +1,398 @@
+<!-- Custom HTML site displayed as the Home chapter -->
+
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+<style>
+  .md-main {
+    flex-grow: 0
+  }
+
+  .md-main__inner {
+    display: flex;
+    height: 100%;
+  }
+
+  .tx-container {
+    padding-top: .0rem;
+    background: linear-gradient(to bottom, var(--md-primary-fg-color), rgb(216, 113, 87) 99%, #fff 99%)
+  }
+
+  .tx-hero {
+    margin: 32px 2.8rem;
+    color: var(--md-primary-bg-color);
+    justify-content: center;
+  }
+
+  .tx-hero h1 {
+    margin-bottom: 1rem;
+    color: currentColor;
+    font-weight: 700
+  }
+
+  .tx-hero__content {
+    padding-bottom: 1rem;
+    margin: 0 auto;
+  }
+
+  .tx-hero__image {
+    width: 17rem;
+    height: 17rem;
+    order: 1;
+    padding-right: 2.5rem;
+  }
+
+  .tx-hero .md-button {
+    margin-top: .5rem;
+    margin-right: .5rem;
+    color: var(--md-primary-bg-color)
+  }
+
+  .tx-hero .md-button--primary {
+    background-color: var(--md-primary-bg-color);
+    color: hsla(280deg, 37%, 48%, 1);
+    border-color: var(--md-primary-bg-color)
+  }
+
+  .tx-hero .md-button:focus,
+  .tx-hero .md-button:hover {
+    background-color: var(--md-accent-fg-color);
+    color: var(--md-default-bg-color);
+    border-color: var(--md-accent-fg-color)
+  }
+
+  .feature-item h2 svg {
+    height: 30px;
+    float: left;
+    margin-right: 10px;
+    transform: translateY(10%);
+  }
+
+  .top-hr {
+    margin-top: 42px;
+  }
+
+  .feature-item {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    box-sizing: border-box;
+    padding: 0 15px;
+    word-break: break-word
+  }
+
+  .feature-item h2 {
+    color: #333;
+    font-weight: 300;
+    font-size: 25px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: normal;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-family: inherit;
+  }
+
+  .feature-item p {
+    font-size: 16px;
+    line-height: 1.8em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    color: #111;
+    margin: 0 0 10px;
+    display: block;
+  }
+
+  @media screen and (max-width:30em) {
+    .tx-hero h1 {
+      font-size: 1.4rem
+    }
+  }
+
+  @media screen and (min-width:60em) {
+    .md-sidebar--secondary {
+      display: none
+    }
+
+    .tx-hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tx-hero__content {
+      max-width: 22rem;
+      margin-top: 3.5rem;
+      margin-bottom: 3.5rem;
+      margin-left: 1.0rem;
+      margin-right: 4.0rem;
+      align-items: center;
+    }
+  }
+
+  @media screen and (min-width:76.25em) {
+    .md-sidebar--primary {
+      display: none
+    }
+
+    .top-hr {
+      width: 100%;
+      display: flex;
+      max-width: 61rem;
+      margin-right: auto;
+      margin-left: auto;
+      padding: 0 .2rem;
+    }
+
+    .bottom-hr {
+      margin-top: 10px;
+      width: 100%;
+      display: flex;
+      max-width: 61rem;
+      margin-right: auto;
+      margin-left: auto;
+      padding: 0 .2rem;
+    }
+
+
+    .feature-item {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .feature-item:hover {
+      background-color: #526cfe47;
+      border-radius: 3px;
+    }
+  }
+
+  .hr {
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    margin: 20px 0;
+  }
+
+  .text-center {
+    text-align: center;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 15px;
+    font-family: 'Lato', sans-serif;
+    font-size: 23px;
+    font-weight: 300;
+    padding-bottom: 10px;
+  }
+
+  .logos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: row wrap;
+    margin: 0 auto;
+  }
+
+  .logos img {
+    flex: 1 1 auto;
+    padding: 25px;
+    max-height: 130px;
+    vertical-align: middle;
+  }
+
+  .hr-logos {
+    margin-top: 0;
+    margin-bottom: 30px;
+  }
+
+  .md-footer-meta__inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 1.0rem;
+  }
+
+  .md-footer-social {
+    padding-top: 20px;
+  }
+
+  .code-animation {
+    font-family: 'Fira Code', monospace;
+    white-space: pre;
+    background: #282c34;
+    color: #9DA5B4;
+    padding: 20px;
+    border-radius: 4px;
+    overflow: hidden;
+    font-size: 16px;
+  }
+</style>
+<title>Animated Code Typing with Syntax Highlighting</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/components/prism-python.min.js"></script>
+
+<script>
+  const code = `from alphai import AlphAI
+
+prompt = "Hello there!"
+
+aai = AlphAI()
+
+# Start and stop GPU profiler
+aai.start()
+aai.generate(prompt)
+aai.stop()
+
+# Or use context manger
+with aai:
+    aai.generate(prompt)
+`;
+
+  let currentIndex = 0;
+
+  function typeCode() {
+    const container = document.getElementById('code-animation');
+    container.textContent += code[currentIndex];
+    Prism.highlightElement(container); // Apply syntax highlighting
+    currentIndex++;
+
+    if (currentIndex < code.length) {
+      setTimeout(typeCode, Math.random() * 20); // Randomize for a more natural typing effect
+    }
+  }
+
+  let serverCode = `from alphai import AlphAI
+
+api_key = ***************
+
+aai = AlphAI(
+  api_key=os.environ.get("ALPHAI_API_KEY")
+)
+
+# Start remote Jupyter Lab servers
+aai.start_server()
+
+# Upload to your server's file system 
+aai.upload("./main.py")
+
+# Start python kernel and run code remotely
+code = "print('Hello world!')"
+aai.run_code(code)
+`;
+
+  let profilingCode = `from alphai import AlphAI
+import torch
+import math
+
+aai = AlphAI()
+
+model = torch.nn.Sequential(
+    torch.nn.Linear(3, 1),
+    torch.nn.Flatten(0, 1)
+).to("cuda")
+x = torch.linspace(-math.pi, math.pi, 2000)
+p = torch.tensor([1, 2, 3])
+xx = x.unsqueeze(-1).pow(p).to("cuda")
+
+aai.start()
+model(xx)
+aai.stop()
+`;
+
+  let benchmarkingCode = `from alphai import AlphAI
+
+prompt = "Hello there!"
+
+aai.start_timer()
+aai.generate(prompt)
+aai.stop_timer()
+
+aai.benchmark(aai.generate, prompt, num_iter = 5)
+
+`;
+
+  function setCode() {
+    const serverCodeContainer = document.getElementById('server-code');
+    serverCodeContainer.innerHTML = `<pre><code class="language-python">${serverCode}</code></pre>`;
+
+    const profilingCodeContainer = document.getElementById('profiling-code');
+    profilingCodeContainer.innerHTML = `<pre><code class="language-python">${profilingCode}</code></pre>`;
+
+    const benchmarkingCodeContainer = document.getElementById('benchmarking-code');
+    benchmarkingCodeContainer.innerHTML = `<pre><code class="language-python">${benchmarkingCode}</code></pre>`;
+  }
+
+  window.onload = function () {
+    typeCode(); // Start typing
+    setCode();
+    Prism.highlightAll(); // Highlight all code blocks
+  }
+</script>
+
+</script>
+
+<!-- Main site Entry button descriptions -->
+<section class="tx-container">
+  <div class="md-grid md-typeset">
+    <div class="tx-hero">
+      <div class="tx-hero__image language-py code-animation" id="code-animation"></div>
+
+      <div class="tx-hero__content">
+        <h1> AlphAI - Unlock the power of accelerated compute</h1>
+        <p><code>pip install alphai</code> <br/> and start up your remote GPU servers, prototype AI and LLMs, benchmark code,
+          and analyze
+          profiling data.</p>
+        <a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | striptags }}"
+          class="md-button md-button--primary">
+          Get started
+        </a>
+        <a href="{{ config.repo_url }}" title="{{ lang.t('source.link.title') }}" class="md-button">
+          Go to GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main site box descriptions -->
+<div class="top-hr">
+  <div class="feature-item">
+    <h2 class="align-left">
+      <!-- svgrepo internet-duotone-line-icons -->
+      <img src="images/api-interface-svgrepo-com.svg" alt="Machine Vision" width="35" height="35" />
+      Python Client for your remote servers
+    </h2>
+    <p>Use AlphAI to start up GPU servers with a Jupyter Lab IDE with any number of runtime environments that support
+      PyTorch, Hugging Face, and more.</p>
+  </div>
+  <div class="code-animation" id="server-code"></div>
+</div>
+
+<div class="top-hr">
+  <div class="feature-item">
+    <h2>
+      <img src="images/machine-vision-svgrepo-com.svg" alt="Machine Vision" width="35" height="35" />
+      GPU Profiling
+    </h2>
+    <p>Analyze and profile tensor traces on your deep learning runs in your GPU servers.</p>
+  </div>
+  <div class="code-animation" id="profiling-code"></div>
+</div>
+
+<div class="top-hr">
+  <div class="feature-item">
+    <h2>
+      <img src="images/interface-control-svgrepo-com.svg" alt="Machine Vision" width="35" height="35" />
+      Pythonic Benchmarking and Timing
+    </h2>
+    <p>Benchmark and time your code and functions.</p>
+  </div>
+  <div class="code-animation" id="benchmarking-code"></div>
+</div>
+
+{% endblock %}
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{#- Need a newline after the last line -#}

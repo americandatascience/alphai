@@ -2,6 +2,8 @@
 
 AlphAI is a high-level open-source Python toolkit designed for efficient AI development and in-depth GPU profiling. Supporting popular tensor libraries like [PyTorch](https://pytorch.org/get-started/locally/) and [Jax](https://github.com/google/jax), it optimizes developer operations on GPU servers and integrates seamlessly with [American Data Science Labs](https://dashboard.amdatascience.com), offering robust control over remote Jupyter Lab servers and environment runtimes.
 
+> **Warning:** This repository is in beta, expect breakage and unexpected behavior. Please reach out to support or create a ticket when encountering these issues.
+
 ## Features
 
 - **GPU Profiling and Analytics**: Advanced GPU profiling capabilities to maximize resource efficiency and performance.

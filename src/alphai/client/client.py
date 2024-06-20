@@ -8,6 +8,8 @@ import json
 from websocket import create_connection, WebSocketTimeoutException
 import uuid
 import datetime
+import importlib
+from platform import platform
 
 import nbserv_client
 import os
@@ -21,6 +23,8 @@ class Client:
         host: str = "https://lab.amdatascience.com",
         dashboard_url: str = "https://dashboard.amdatascience.com",
         access_token=None,
+        timeout: float = None,
+        headers: dict = {},
     ):
         self.host = host
         self.dashboard_url = dashboard_url
@@ -33,8 +37,40 @@ class Client:
         # Create an instance of the API class
         self.api_instance = jh_client.DefaultApi(self.api_client)
 
+        # Headers
+        self.headers = headers
+        self.headers["User-Agent"] = (
+            f"alphai sdk v-{get_alphai_version()}_{platform().lower()}"
+        )
+        self.headers["X-Device-Id"] = str(uuid.UUID(int=uuid.getnode()))
+        self.headers["X-metrics"] = "{}"
+        self.headers.update(
+            {"apikey": f"{self.access_token}", "Accept": "application/json"}
+        )
+        self.timeout = timeout
+
         # Initialize server
         self.initialize_server()
+
+    def _request(self, method, endpoint, data=None):
+        url = f"{self.dashboard_url}/{endpoint}"
+        response = requests.request(method, url, json=data, headers=self.headers)
+        try:
+            return response.json()
+        except ValueError:
+            print("Response is not in JSON format")
+
+    def get(self, endpoint):
+        return self._request("GET", endpoint)
+
+    def post(self, endpoint, data):
+        return self._request("POST", endpoint, data)
+
+    def put(self, endpoint, data):
+        return self._request("PUT", endpoint, data)
+
+    def delete(self, endpoint):
+        return self._request("DELETE", endpoint)
 
     def initialize_server(self, server_name=""):
         self.server_name = server_name
@@ -76,43 +112,68 @@ class Client:
         }
 
     # Dashboard Client
-    def start_server(
-            self,
-            server_name: str = "",
-            environment: str = "ai",
-            server_request: str = "medium-cpu",
-        ):
+    def servers(
+        self,
+    ):
+        # Get Servers
+        response = self.get(
+            endpoint="api/server",
+        )
+
+        return response
+
+    def create_server(
+        self,
+        server_name: str = "default",
+        environment: str = "ai",
+        compute: str = "amds-medium_cpu",
+        port: int = 5000,
+    ):
 
         # Start Server given name
         # Data to be sent in POST request
+        if not server_name:
+            server_name = "default"
         data = {
             "server_name": server_name,
             "environment": environment,
-            "server_request": server_request,
-            "port": 5000,
+            "server_request": compute,
+            "port": port,
         }
 
-        url = f"{self.dashboard_url}/api/server"
-        headers = {
-            "apikey": f"{self.access_token}",
-            'Accept': 'application/json'
-        }
-
-        response = requests.post(
-            url,
-            json=data,
-            headers=headers,
+        response = self.post(
+            endpoint="api/server",
+            data=data,
         )
 
-        # If the response is JSON
-        try:
-            response_data = response.json()
-            return response_data
-        except ValueError:
-            print("Response is not in JSON format")
+        return response
 
+    def start_server(
+        self,
+        server_name: str = "default",
+        environment: str = "ai",
+        compute: str = "amds-medium_cpu",
+        port: int = 5000,
+    ):
 
-    def stop_server(self, server_name: str = ""):
+        # Start Server given name
+        # Data to be sent in POST request
+        if not server_name:
+            server_name = "default"
+        data = {
+            "environment": environment,
+            "server_request": compute,
+            "port": port,
+        }
+
+        response = self.post(
+            endpoint=f"api/server/{server_name}",
+            data=data,
+        )
+
+        return response
+
+    def stop_server(self, server_name: str = "default"):
         # Stop Server given name
         # Data to be sent in POST request
         if not server_name:
@@ -121,79 +182,77 @@ class Client:
             "stop": True,
         }
 
-        url = f"{self.dashboard_url}/api/server/{server_name}"
-        headers = {
-            "apikey": f"{self.access_token}",
-            'Accept': 'application/json'
-            }
-
-        response = requests.post(
-            url,
-            json=data,
-            headers=headers,
+        response = self.post(
+            endpoint=f"api/server/{server_name}",
+            data=data,
         )
 
-        # If the response is JSON
-        try:
-            response_data = response.json()
-            return response_data
-        except ValueError:
-            print("Response is not in JSON format")
+        return response
+
+    def delete_server(self, server_name: str = "default"):
+        # Delete Server given name
+        # Data to be sent in POST request
+        if not server_name:
+            server_name = "default"
+
+        response = self.delete(
+            endpoint=f"api/server/{server_name}",
+        )
+
+        return response
 
     def alph(
-            self,
-            server_name: str = "",
-            messages: str | list = "Hi Alph.",
-            engine: str = "gpt3",
-        ):
-
+        self,
+        server_name: str = "default",
+        messages: list = [{"role": "user", "content": "Hi Alph!"}],
+        engine: str = "gpt-3",
+    ):
         # Agent Alph call
+        if not server_name:
+            server_name = "default"
+
         # Data to be sent in POST request
-        if isinstance(messages, str):
-            data = {
-                "messages": [
-                    {"role": "user", "content": messages}
-                ],
-            }
-        else:
-            data = {
-                "messages": messages
-            }
+        data = {"messages": messages}
 
         url = f"{self.dashboard_url}/api/alph/{server_name}/{engine}"
-        headers = {
-            "apikey": f"{self.access_token}",
-            'Accept': 'application/json'
-        }
 
-        response = requests.post(
-            url,
-            json=data,
-            headers=headers,
-            stream=True
-        )
+        response = requests.post(url, json=data, headers=self.headers, stream=True)
 
         # If the response is JSON
-        #try:
+        # try:
         if response.encoding is None:
-            response.encoding = 'utf-8'
+            response.encoding = "utf-8"
 
         full_output = []
+        # Decode and stream text properly
         try:
             for line in response.iter_lines(decode_unicode=True):
                 if line:
-                    #import pdb; pdb.set_trace()
-                    split_line = line.split(':')
-                    cleaned_line = split_line[1].replace('"', '')
-                    print(cleaned_line, end="")
+                    # import pdb; pdb.set_trace()
+                    split_line = line.split(":", 1)
+                    try:
+                        # import pdb; pdb.set_trace()
+                        tool_call = json.loads(split_line[1])
+                        cleaned_line = json.dumps(tool_call.get("result", ""), indent=4)
+                        print("Analyzing...")
+                        print(cleaned_line)
+                    except:
+                        cleaned_line = split_line[1].replace('"', "")
+                        if r"\n" in cleaned_line:
+                            print(cleaned_line.replace(r"\n", ""))
+                        else:
+                            print(cleaned_line, end="")
                     full_output.append(cleaned_line)
         except ValueError:
             print("Response encoded incorrectly.")
-        
+
         return "".join(full_output)
 
-    # NB server client
+    # NB Server Client
+
     def get_contents(self, server_name: str = ""):
+        if server_name == "default":
+            server_name = ""
         if server_name != self.server_name:
             self.initialize_server(server_name=server_name)
         path = ""  # str | file path
@@ -219,6 +278,9 @@ class Client:
         ext: str = "",
         type: str = "directory",
     ):
+        if server_name == "default":
+            server_name = ""
+
         # Data to be sent in POST request
         data = {
             "type": type,
@@ -247,6 +309,8 @@ class Client:
         path: str = "Untitled Folder",
         new_path: str = "alphai_",
     ):
+        if server_name == "default":
+            server_name = ""
         # Data to be sent in PATCH request
         data = {"path": new_path}
 
@@ -267,6 +331,8 @@ class Client:
             print("Response is not in JSON format")
 
     def put_contents(self, server_name: str = "", path: str = "", file_path: str = ""):
+        if server_name == "default":
+            server_name = ""
         # Data to be sent in POST request
         file_name = file_path[1 + file_path.rfind(os.sep) :]
         url = f"{self.host}/user/{self.user_name}/{server_name}/api/contents/{path}/{file_name}"
@@ -290,6 +356,8 @@ class Client:
             print("Request is invalid")
 
     def get_kernels(self, server_name=""):
+        if server_name == "default":
+            server_name = ""
         # Get initial kernel info
         url = f"{self.host}/user/{self.user_name}/{server_name}/api/kernels"
         headers = {"Authorization": f"Token {self.access_token}"}
@@ -299,6 +367,8 @@ class Client:
         return kernels
 
     def shutdown_all_kernels(self, server_name=""):
+        if server_name == "default":
+            server_name = ""
         # Get initial kernel info
         kernels = self.get_kernels(server_name=server_name)
         # Delete all kernels
@@ -315,6 +385,8 @@ class Client:
         messages: List[str] = ["print('Hello World!')"],
         return_full: bool = False,
     ):
+        if server_name == "default":
+            server_name = ""
         # start initial kernel info
         url = f"{self.host}/user/{self.user_name}/{server_name}/api/kernels"
         headers = {"Authorization": f"Token {self.access_token}"}
@@ -375,8 +447,14 @@ class Client:
         if return_full:
             return results
 
-    def get_service(self, server_name: str = ""):
-        server_name = f"--{server_name}" if server_name else ""
-        user_name = self.user_name.replace("@", "-40").replace(".", "-2e")
-        url = f"https://jupyter-{user_name}{server_name}.americandatascience.dev"
-        return url
+
+def get_alphai_version() -> str:
+    """Grabs the version of AlphAI from builtin importlib library
+
+    Returns:
+        str: version name, unknown if fails to dynamically pull
+    """
+    try:
+        return importlib.metadata.version("alphai")
+    except:
+        return "unknown"

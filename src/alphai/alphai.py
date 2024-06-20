@@ -43,7 +43,7 @@ class AlphAI:
         organization: Union[str, None] = None,
         base_url: str = None,
         output_path: str = "./alphai_profiler_store",
-        server_name: str = "",
+        server_name: str = "default",
         pt_profiler_configs: BaseProfilerConfigs = None,
         jax_profiler_configs: BaseProfilerConfigs = None,
         **kwargs,
@@ -86,6 +86,10 @@ class AlphAI:
         if base_url is None:
             base_url = f"https://lab.amdatascience.com"
         self.base_url = base_url
+
+        # Alph
+
+        self.alph_messages = []
 
         # Directory ops
         self.pt_trace_dirs = self.get_pt_traces()
@@ -201,7 +205,7 @@ class AlphAI:
         self.stop()
 
     # API Methods
-    def get_servers(self):
+    def servers(self):
         """
         Retrieves the list of available servers from the remote service.
 
@@ -210,14 +214,43 @@ class AlphAI:
         """
         if not self.api_key:
             raise ValueError("Requires user authentication with an API Key")
-        return self.client.get_servers()
+        return self.client.servers()
+
+    def create_server(
+        self,
+        server_name: str = "default",
+        environment: str = "ai",
+        compute: str = "amds-medium_cpu",
+        port: int = 5000,
+    ):
+        """
+        Creates a notebook server with the given name.
+
+        Args:
+            server_name (str): The name of the server to start. If None, uses the server name set in the instance.
+
+        Returns:
+            Response from the server start request.
+        """
+        if not self.api_key:
+            raise ValueError("Requires user authentication with an API Key")
+        # Use set self.server_name if not provided
+        if server_name is None:
+            server_name = self.server_name
+        return self.client.create_server(
+            server_name=server_name,
+            environment=environment,
+            compute=compute,
+            port=port,
+        )
 
     def start_server(
-            self,
-            server_name: str = None,
-            environment: str = "ai",
-            server_request: str = "medium-cpu",
-        ):
+        self,
+        server_name: str = "default",
+        environment: str = "ai",
+        compute: str = "amds-medium_cpu",
+        port: int = 5000,
+    ):
         """
         Starts a server with the given name.
 
@@ -232,9 +265,14 @@ class AlphAI:
         # Use set self.server_name if not provided
         if server_name is None:
             server_name = self.server_name
-        return self.client.start_server(server_name=server_name, environment=environment, server_request=server_request)
+        return self.client.start_server(
+            server_name=server_name,
+            environment=environment,
+            compute=compute,
+            port=port,
+        )
 
-    def stop_server(self, server_name: str = None):
+    def stop_server(self, server_name: str = "default"):
         """
         Stops a server with the given name.
 
@@ -251,14 +289,9 @@ class AlphAI:
             server_name = self.server_name
         return self.client.stop_server(server_name=server_name)
 
-    def alph(
-            self,
-            server_name: str = None,
-            messages: str = "ls",
-            engine: str = "gpt3",
-        ):
+    def delete_server(self, server_name: str = "default"):
         """
-        Gives alph commands to help you and run on the server.
+        Deletes a server with the given name.
 
         Args:
             server_name (str): The name of the server to stop. If None, uses the server name set in the instance.
@@ -271,9 +304,47 @@ class AlphAI:
         # Use set self.server_name if not provided
         if server_name is None:
             server_name = self.server_name
-        return self.client.alph(server_name=server_name, messages=messages, engine=engine)
+        return self.client.delete_server(server_name=server_name)
 
-    def upload(self, server_name: str = None, file_path: str = "", remote_path=""):
+    def alph(
+        self,
+        messages: str | list,
+        server_name: str = "default",
+        engine: str = "gpt-3",
+        no_history: bool = False,
+    ):
+        """
+        Gives alph commands to help you and run code in your servers.
+
+        Args:
+            server_name (str): The name of the server to stop. If None, uses the server name set in the instance.
+
+        Returns:
+            Response from the server stop request.
+        """
+        if not self.api_key:
+            raise ValueError("Requires user authentication with an API Key")
+
+        # Use set self.server_name if not provided
+        if server_name is None:
+            server_name = self.server_name
+
+        if isinstance(messages, str):
+            messages = [{"role": "user", "content": messages}]
+
+        if no_history:
+            return self.client.alph(
+                server_name=server_name, messages=messages, engine=engine
+            )
+        else:
+            self.alph_messages += messages
+            assistant_response = self.client.alph(
+                server_name=server_name, messages=self.alph_messages, engine=engine
+            )
+            self.alph_messages.append({"role": "assistant", "content": assistant_response})
+            return assistant_response
+
+    def upload(self, server_name: str = "default", file_path: str = "", remote_path=""):
         """
         Uploads a file to a remote server.
 
@@ -297,7 +368,7 @@ class AlphAI:
     def run_code(
         self,
         code: str = "print('Hello world!')",
-        server_name: str = None,
+        server_name: str = "default",
         clear_other_kernels: bool = True,
         return_full: bool = False,
     ):
@@ -329,7 +400,7 @@ class AlphAI:
             server_name=server_name, messages=[code], return_full=return_full
         )
 
-    def get_service(self, server_name: str = None):
+    def get_service(self, server_name: str = "default"):
         """
         Retrieves the service URL for a running service or app on the server.
 
